@@ -177,7 +177,7 @@
                 </div>
                 <div class="tab-pane fade" id="demographics" role="tabpanel" aria-labelledby="demographics-tab">
 
-                    <h2 class="w-100 text-center">Population</h2>
+                    <h2 class="w-100 text-center">Population (Millions)</h2>
 
                     <canvas id="populationChart"></canvas>
 
@@ -239,3 +239,213 @@
     }
     ?>
 </div>
+<script>
+    document.addEventListener("DOMContentLoaded", function(event) {
+        // Load charts 
+        <?php
+        $labels = "";
+        foreach ($history_instance as $history_turn) {
+            $turn_number = strval($history_turn['turn']);
+            $labels = $labels . "'" . $turn_number . "'" . ",";
+        }
+        $labels = rtrim($labels, ",");
+        if (!empty($history_instance[0]) && $history_instance != null) {
+
+            function printChart($parID, $history_instance, $labels, $max = null)
+            {
+                $hisdataset = "";
+                foreach ($history_instance as $history_turn) {
+                    $hisdataset = $hisdataset . $history_turn[$parID] . ",";
+                }
+
+                if ($parID == "gdp") {
+                    $hisdataset = "";
+                    foreach ($history_instance as $history_turn) {
+                        $hisdataset = $hisdataset . round((float)$history_turn[$parID] / 1000000000, 2) . ",";
+                    }
+                }
+
+                if ($parID == "population") {
+                    $hisdataset = "";
+                    foreach ($history_instance as $history_turn) {
+                        $hisdataset = $hisdataset . round((float)$history_turn[$parID] / 1000000, 2) . ",";
+                    }
+                }
+
+                $hisdataset = rtrim($hisdataset, ",");
+
+                if ($max) {
+                    echo "
+                    var ctx = document.getElementById('" . $parID . "Chart').getContext('2d');
+                    var chart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: [" . $labels . "],
+                            datasets: [{
+                                label: '" . $parID . "',
+                                borderColor: '#0F1833',
+                                data: [" . $hisdataset . "]
+                            }]
+                        },
+                        // Start from 0
+                        options: {
+                            title: {
+                              display: false
+                            },
+                            scales: {
+                              yAxes: [{
+                                ticks: {
+                                    min: 0, // minimum value
+                                    max: " . $max . " // maximum value
+                                }
+                              }]
+                            }
+                        }
+                    });
+                    ";
+                } else {
+                    echo "
+                    var ctx = document.getElementById('" . $parID . "Chart').getContext('2d');
+                    var chart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: [" . $labels . "],
+                            datasets: [{
+                                label: '" . $parID . "',
+                                borderColor: '#0F1833',
+                                data: [" . $hisdataset . "]
+                            }]
+                        },
+                        // Start from 0
+                        options: {
+                            title: {
+                              display: false
+                            },
+                            scales: {
+                              yAxes: [{
+                                ticks: {
+                                    min: 0, // minimum value
+                                }
+                              }]
+                            }
+                        }
+                    });
+                    ";
+                }
+            }
+
+            printChart('gdp', $history_instance, $labels);
+            printChart('population', $history_instance, $labels);
+            printChart('birth_rate', $history_instance, $labels);
+            printChart('death_rate', $history_instance, $labels);
+            printChart('immigration_rate', $history_instance, $labels);
+            printChart('emigration_rate', $history_instance, $labels);
+            printChart('spending', $history_instance, $labels);
+            printChart('income', $history_instance, $labels);
+            printChart('debt', $history_instance, $labels);
+            printChart('debt_maintenance', $history_instance, $labels);
+
+            printChart('average_income', $history_instance, $labels);
+            printChart('average_income_high', $history_instance, $labels);
+            printChart('average_income_low', $history_instance, $labels);
+
+            printChart('employment_rate', $history_instance, $labels, 100);
+            printChart('crime_level', $history_instance, $labels, 100);
+            printChart('freedom_level', $history_instance, $labels, 100);
+            printChart('civil_rights_level', $history_instance, $labels, 100);
+            printChart('health_level', $history_instance, $labels, 100);
+            printChart('tourist_attractiveness_level', $history_instance, $labels, 100);
+            printChart('education_level', $history_instance, $labels, 100);
+            printChart('culture_level', $history_instance, $labels, 100);
+            printChart('happiness', $history_instance, $labels, 100);
+
+            $hisdataset = "";
+            foreach ($history_instance as $history_turn) {
+                $hisdataset = $hisdataset . (int)((int)$history_turn['gdp'] / (int)$history_turn['population']) . ",";
+            }
+            $hisdataset = rtrim($hisdataset, ",");
+        ?>
+            var ctx = document.getElementById('gdp_per_capitaChart').getContext('2d');
+            var chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [<?= $labels ?>],
+                    datasets: [{
+                        label: 'GDP per capita USD',
+                        borderColor: '#0F1833',
+                        data: [<?= $hisdataset ?>]
+                    }]
+                },
+                options: {
+                    title: {
+                        display: false
+                    },
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero: true
+                            }
+                        }]
+                    }
+                }
+            });
+            <?php
+            $party_names_and_colours = array();
+            foreach ($country_instance['parties'] as $party) {
+                array_push($party_names_and_colours, array(
+                    'name' => $party['name'],
+                    'colour' => $party['colour'],
+                ));
+            }
+
+            $percentages = array();
+            foreach ($history_instance as $history_turn) {
+                foreach ($history_turn['gallups'] as $key => $party) {
+                    if (!isset($percentages[$key])) {
+                        $percentages[$key] = array();
+                    }
+                    array_push($percentages[$key], (int)$party['gallup_percentage']);
+                }
+            }
+            ?>
+            var ctx = document.getElementById('partyPollsChart').getContext('2d');
+            var chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [<?= $labels; ?>],
+                    datasets: [<?php
+                                $i = 0;
+                                foreach ($party_names_and_colours as $party_name_and_colour) {
+                                    $data = "";
+                                    foreach ($percentages[$i] as $percentage) {
+                                        $data = $data . $percentage . ",";
+                                    }
+                                    $data = rtrim($data, ",");
+                                    echo "{";
+                                    echo "fill: false,";
+                                    echo 'label: "' . $party_name_and_colour['name'] . '",';
+                                    echo 'borderColor: "' . $party_name_and_colour['colour'] . '",';
+                                    echo 'data: [' . $data . '],';
+                                    echo "},";
+                                    $i++;
+                                }
+                                ?>]
+                },
+                options: {
+                    title: {
+                        display: false
+                    },
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero: true
+                            }
+                        }]
+                    }
+                }
+            });
+        <?php
+        }
+        ?>
+    });
+</script>
