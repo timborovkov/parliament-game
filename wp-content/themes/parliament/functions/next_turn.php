@@ -10,6 +10,9 @@ function game_next_turn_function()
 	$gameID = $_POST['gameID'];
 	$currentTurn = (int)get_post_meta($gameID, '_turn', true);
 
+	// Adjust polling to goverment performance
+	adjustGovermentPollingBasedOnPerformance($gameID);
+
 	$history_instance = json_decode(get_post_meta($gameID, '_history_instance', true), true);
 	$country_instance = json_decode(get_post_meta($gameID, '_country_instance', true), true);
 
@@ -176,64 +179,62 @@ function game_next_turn_function()
 	$country_instance['employment_rate'] = randomizeData($country_instance['employment_rate']);
 
 	// Change polling a bit
-	/*
-	        $hundredCheck = 0;
-	        foreach ($country_instance['parties'] as $key => $party) {
-	        	$gallup_change = 0;
-	        	$gallup_total = 0;
+	// $hundredCheck = 0;
+	// foreach ($country_instance['parties'] as $key => $party) {
+	// 	$gallup_change = 0;
+	// 	$gallup_total = 0;
 
-	            // +-1% each way random
-	            $gallup_change = rand(-1, 1);
+	// 	// +-1% each way random
+	// 	$gallup_change = rand(-1, 1);
 
-	            if ($country_instance['parties'][$key]['gallup_percentage'] <= 1) {
-	            	// 40% of up, 60% nothing 
-	            	$effects = rand(1,10);
-	            	if ($effects <= 4) {
-	            		$gallup_change = 1;
-	            	} else {
-	            		$gallup_change = 0;
-	            	}
-	            }
+	// 	if ($country_instance['parties'][$key]['gallup_percentage'] <= 1) {
+	// 		// 40% of up, 60% nothing 
+	// 		$effects = rand(1, 10);
+	// 		if ($effects <= 4) {
+	// 			$gallup_change = 1;
+	// 		} else {
+	// 			$gallup_change = 0;
+	// 		}
+	// 	}
 
-	            // Round the results
-	            $old_gallup_total = $country_instance['parties'][$key]['gallup_percentage'];
-	        	$gallup_total = (int)$country_instance['parties'][$key]['gallup_percentage'] + $gallup_change;
-	        	if ($gallup_total <= 1) {
-	        		$gallup_total = 1;
-	        	}
-	        	$gallup_change = $gallup_total - $old_gallup_total;
+	// 	// Round the results
+	// 	$old_gallup_total = $country_instance['parties'][$key]['gallup_percentage'];
+	// 	$gallup_total = (int)$country_instance['parties'][$key]['gallup_percentage'] + $gallup_change;
+	// 	if ($gallup_total <= 1) {
+	// 		$gallup_total = 1;
+	// 	}
+	// 	$gallup_change = $gallup_total - $old_gallup_total;
 
-	        	$hundredCheck = $hundredCheck + $gallup_total;
+	// 	$hundredCheck = $hundredCheck + $gallup_total;
 
-	        	$country_instance['parties'][$key]['gallup_percentage'] = $gallup_total;
-	        	$country_instance['parties'][$key]['gallup_change'] = $gallup_change;
-	        }
+	// 	$country_instance['parties'][$key]['gallup_percentage'] = $gallup_total;
+	// 	$country_instance['parties'][$key]['gallup_change'] = $gallup_change;
+	// }
 
-	        $hundredCheck = $hundredCheck - 100;
-	       	if ($hundredCheck < 0) {
-	       		// There are some gallup to be given away
-	       		$i = 0;
-	       		while ($i < abs($hundredCheck)) {
-	       			// Who will this percentage point go to?
-	                $goesTo = rand(0,(count($country_instance['parties']) - 1));
-	                $country_instance['parties'][$goesTo]['gallup_percentage'] = $country_instance['parties'][$goesTo]['gallup_percentage'] + 1;
-	                $country_instance['parties'][$goesTo]['gallup_change'] = $country_instance['parties'][$goesTo]['gallup_change'] + 1;
-	       			$i = $i+1;
-	       		}
-	       	} elseif ($hundredCheck > 0) {
-	       		// There are some gallup points to be taken away
-	       		$i = 0;
-	       		while ($i < $hundredCheck) {
-	       			// Who will this percentage point go to?
-	       			$goesTo = rand(0,(count($country_instance['parties']) - 1));
-	       			if ($country_instance['parties'][$goesTo]['gallup_percentage'] > 1) {
-	                	$country_instance['parties'][$goesTo]['gallup_percentage'] = $country_instance['parties'][$goesTo]['gallup_percentage'] - 1;
-	                	$country_instance['parties'][$goesTo]['gallup_change'] = $country_instance['parties'][$goesTo]['gallup_change'] - 1;
-	                	$i = $i+1;
-	                }
-	       		}
-	       	}
-			*/
+	// $hundredCheck = $hundredCheck - 100;
+	// if ($hundredCheck < 0) {
+	// 	// There are some gallup to be given away
+	// 	$i = 0;
+	// 	while ($i < abs($hundredCheck)) {
+	// 		// Who will this percentage point go to?
+	// 		$goesTo = rand(0, (count($country_instance['parties']) - 1));
+	// 		$country_instance['parties'][$goesTo]['gallup_percentage'] = $country_instance['parties'][$goesTo]['gallup_percentage'] + 1;
+	// 		$country_instance['parties'][$goesTo]['gallup_change'] = $country_instance['parties'][$goesTo]['gallup_change'] + 1;
+	// 		$i = $i + 1;
+	// 	}
+	// } elseif ($hundredCheck > 0) {
+	// 	// There are some gallup points to be taken away
+	// 	$i = 0;
+	// 	while ($i < $hundredCheck) {
+	// 		// Who will this percentage point go to?
+	// 		$goesTo = rand(0, (count($country_instance['parties']) - 1));
+	// 		if ($country_instance['parties'][$goesTo]['gallup_percentage'] > 1) {
+	// 			$country_instance['parties'][$goesTo]['gallup_percentage'] = $country_instance['parties'][$goesTo]['gallup_percentage'] - 1;
+	// 			$country_instance['parties'][$goesTo]['gallup_change'] = $country_instance['parties'][$goesTo]['gallup_change'] - 1;
+	// 			$i = $i + 1;
+	// 		}
+	// 	}
+	// }
 
 	// TODO
 	// Generate actions by other parties
@@ -401,9 +402,6 @@ function game_next_turn_function()
 	update_post_meta($gameID, '_country_instance', json_encode($country_instance));
 	update_post_meta($gameID, '_history_instance', json_encode($history_instance));
 	update_post_meta($gameID, '_turn_results', json_encode($results));
-
-	// Adjust polling to goverment performance
-	adjustGovermentPollingBasedOnPerformance($gameID);
 
 	// Update data on top of which to build polling next turn
 	update_stats_at_previous_turn($gameID);
