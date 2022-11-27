@@ -28,9 +28,7 @@
             </ul>
             <div class="tab-content" id="myTabContent">
                 <div class="tab-pane fade show active" id="political" role="tabpanel" aria-labelledby="political-tab">
-                    <h2 class="w-100 text-center">Polls</h2>
-                    <canvas id="partyPollsChart"></canvas>
-                    <h2 class="w-100 text-center">Paries</h2>
+                    <h2 class="w-100 text-center">Parties</h2>
                     <table class="table table-striped">
                         <thead class="thead-dark">
                             <tr>

@@ -14,5 +14,9 @@
         <div class="col-md-6">
             <?php echo $country_content; ?>
         </div>
+        <div class="col-12">
+            <h2 class="w-100 text-center">Polls</h2>
+            <canvas id="partyPollsChart"></canvas>
+        </div>
     </div>
 </div>

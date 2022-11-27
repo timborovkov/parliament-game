@@ -402,8 +402,8 @@ function game_next_turn_function()
 	update_post_meta($gameID, '_history_instance', json_encode($history_instance));
 	update_post_meta($gameID, '_turn_results', json_encode($results));
 
-	// Adjust polling to goverment performance, TODO: change should probably be more mild
-	//adjustGovermentPollingBasedOnPerformance($gameID, false);
+	// Adjust polling to goverment performance
+	adjustGovermentPollingBasedOnPerformance($gameID);
 
 	// Update data on top of which to build polling next turn
 	update_stats_at_previous_turn($gameID);
